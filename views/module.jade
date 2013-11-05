@@ -1,0 +1,16 @@
+extends layout
+block content
+
+  if works
+    p.yes
+      | Yes!
+      | <strong><a href="https://drupal.org/project/#{module}">#{name}</a></strong>
+      | works with <strong>Drupal #{version}</strong>.
+  else
+    p.no
+      | No,
+      | <strong><a href="https://drupal.org/project/#{module}">#{name}</a></strong>
+      | does not work with <strong>Drupal #{version}</strong>.
+
+  p
+    a(href='/') Check another.

@@ -1,0 +1,16 @@
+extends layout
+
+block content
+  //- h1=
+
+  form(id='single', method='post', action='/')
+
+    input(name='module', id='module', placeholder='Module')
+
+    select(name='version', id='version')
+      each version in versions
+        option(value=version selected=version==current) Drupal #{version}
+
+    input(type='submit')
+
+  script(src='/js/form.js')
