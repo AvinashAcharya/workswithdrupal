@@ -24,10 +24,6 @@ module.exports = {
     res.redirect(req.body.version + '/' + modules.join('+'));
   },
 
-  module: function (req, res) {
-    render(req, res, 'module', req.module);
-  },
-
   modules: function (req, res) {
     render(req, res, 'modules', { version: req.params.version, modules: req.modules });
   }

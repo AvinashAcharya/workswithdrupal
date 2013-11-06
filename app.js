@@ -32,7 +32,6 @@ app.param('modules', params.modules);
 
 app.get('/', routes.index);
 app.post('/', routes.formRedirect);
-app.get('/:version([6-9])/:module([a-z_]+)', routes.module);
 app.get('/:version([6-9])/:modules([a-z_+]+)', routes.modules);
 
 http.createServer(app).listen(app.get('port'), function(){
