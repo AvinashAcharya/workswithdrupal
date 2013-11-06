@@ -1,6 +1,7 @@
 
 var request = require('request');
 var cheerio = require('cheerio');
+var sleep = require('sleep');
 var _ = require('underscore');
 var redis = require('redis');
 var client = redis.createClient();
@@ -70,6 +71,62 @@ function loadCoreModules(cb) {
   });
 };
 
+function loadPopularModules(cb) {
+
+  cache.get('popularmodules', function (err, modules) {
+
+    if (err) return cb(err);
+    if (_.size(modules)) {
+      return cb(null, modules);
+    }
+
+    var modules = {};
+    var interval = 300;
+    var pages = 5;
+    var todo = 0;
+    var options = { headers: { 'User-Agent': USER_AGENT } };
+
+    for (var page=0; page<pages; page++) {
+
+      sleep.sleep(1);
+
+      console.log('page ' + (page + 1), 'https://drupal.org/search/site?page=' + page + '&f[0]=ss_meta_type%3Amodule')
+
+      options.url = 'https://drupal.org/search/site?page=' + page + '&f[0]=ss_meta_type%3Amodule';
+
+      request(options, function (err, res, body) {
+
+        if (err) return cb(err);
+
+        var $ = cheerio.load(body, { ignoreWhitespace: true });
+        var links = $('.search-result .title a');
+
+        todo += links.length;
+
+        links.each(function (i) {
+          setTimeout((function () {
+
+            this._module = $(this).attr('href').match(/\w+$/)[0];
+
+            checkModule(this._module, (function (err, name, supported) {
+
+              if (err) console.error(this._module, err);
+              else console.log(this._module, name, supported );
+
+              modules[this._module] = { name: name, supported: supported };
+
+              todo--;
+              if (!todo) {
+                cb(null, modules);
+              }
+            }).bind(this));
+          }).bind(this), interval * i);
+        });
+      });
+    }
+  });
+}
+
 function checkModule(module, cb) {
 
   var cacheKey = 'module:' + module;
@@ -131,20 +188,21 @@ function checkModule(module, cb) {
   });
 }
 
-module.exports = function (module, cb) {
+module.exports = {
 
-  if (!_.size(coreModules)) {
+  loadCoreModules: loadCoreModules,
 
-    console.log('loading drupal core modules');
+  loadPopularModules: loadPopularModules,
 
-    loadCoreModules(function (err, modules) {
+  module: function (module, cb) {
 
-      console.log(_.size(modules) + ' drupal core modules loaded');
-
-      coreModules = modules;
+    if (!_.size(coreModules)) {
+      loadCoreModules(function (err, modules) {
+        coreModules = modules;
+        checkModule(module, cb);
+      });
+    } else {
       checkModule(module, cb);
-    });
-  } else {
-    checkModule(module, cb);
+    }
   }
 };

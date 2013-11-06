@@ -11,6 +11,7 @@
     "request": "2.x",
     "cheerio": "0.x",
     "redis": "0.x",
-    "underscore": "1.x"
+    "underscore": "1.x",
+    "sleep": "1.x"
   }
 }
