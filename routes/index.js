@@ -19,10 +19,16 @@ module.exports = {
   },
 
   formRedirect: function (req, res) {
-    res.redirect([req.body.version, req.body.module].join('/'));
+    var modules = req.body.module.split(/[\r\n]+/);
+    // TODO: trim / lowercase / sanitise module strings
+    res.redirect(req.body.version + '/' + modules.join('+'));
   },
 
   module: function (req, res) {
     render(req, res, 'module', req.module);
+  },
+
+  modules: function (req, res) {
+    render(req, res, 'modules', { version: req.params.version, modules: req.modules });
   }
 }

@@ -1,8 +1,9 @@
 
 var express = require('express');
-var routes = require('./routes');
 var http = require('http');
 var path = require('path');
+var routes = require(__dirname + '/routes');
+var params = require(__dirname + '/routes/params');
 var workswithdrupal = require(__dirname + '/modules/workswithdrupal.js');
 
 var app = express();
@@ -26,31 +27,13 @@ app.use(function(err, req, res, next) {
   res.send((err.code || 500), err.message);
 });
 
-app.param('module', function (req, res, next, module) {
-
-  var data = {
-    version: req.params.version,
-    module: req.params.module
-  };
-
-  workswithdrupal(data.module, function (err, name, versions) {
-
-    if (err) {
-      return next(err);
-    }
-
-    data.name = name;
-    data.works = versions.indexOf(data.version) > -1;
-
-    req.module = data;
-
-    next();
-  });
-});
+app.param('module', params.module);
+app.param('modules', params.modules);
 
 app.get('/', routes.index);
 app.post('/', routes.formRedirect);
-app.get('/:version([6-9])/:module', routes.module);
+app.get('/:version([6-9])/:module([a-z_]+)', routes.module);
+app.get('/:version([6-9])/:modules([a-z_+]+)', routes.modules);
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Express server listening on port ' + app.get('port'));

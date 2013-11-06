@@ -2,12 +2,12 @@ extends layout
 block content
 
   if works
-    p.yes
+    p
       | Yes!
       | <strong><a href="https://drupal.org/project/#{module}">#{name}</a></strong>
       | works with <strong>Drupal #{version}</strong>.
   else
-    p.no
+    p
       | No,
       | <strong><a href="https://drupal.org/project/#{module}">#{name}</a></strong>
       | does not work with <strong>Drupal #{version}</strong>.

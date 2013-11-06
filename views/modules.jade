@@ -1,0 +1,22 @@
+extends layout
+block content
+
+  h1 Works with Drupal #{version}?
+
+  ul.modules
+    each module in modules
+      if module.works
+        li.module.yes
+          span.symbol ✔
+          a(href='https://drupal.org/project/' + module.module) #{module.name}
+      else if !module.err
+        li.module.no
+          span.symbol ✘
+          a(href='https://drupal.org/project/' + module.module) #{module.name}
+      else
+        li.module.error
+          span.symbol ✘
+          | #{module.err}
+
+  p
+    a(href='/') Check more.
