@@ -11,6 +11,11 @@ function Module(data) {
 
 module.exports = {
 
+  version: function (req, res, next, version) {
+    req.version = version;
+    next();
+  },
+
   module: function (req, res, next, module) {
 
     var data = {

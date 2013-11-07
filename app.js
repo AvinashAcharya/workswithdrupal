@@ -27,10 +27,12 @@ app.use(function(err, req, res, next) {
   res.send((err.code || 500), err.message);
 });
 
+app.param('version', params.version);
 app.param('module', params.module);
 app.param('modules', params.modules);
 
 app.get('/', routes.index);
+app.get('/:version([6-9])', routes.index);
 app.post('/', routes.formRedirect);
 app.get('/:version([6-9])/:modules([a-z_+]+)', routes.modules);
 

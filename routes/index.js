@@ -14,7 +14,7 @@ module.exports = {
   index: function (req, res) {
     res.render('index', {
       versions: config.drupalVersions,
-      current: config.currentDrupalVersion
+      current: req.version || config.currentDrupalVersion
     });
   },
 
