@@ -5,6 +5,7 @@
   var form = document.getElementById('single');
   var input = document.getElementById('module');
   var version = document.getElementById('version');
+  var titleVersion = document.querySelector('.title .version');
 
   var error = {
     clear: function () {
@@ -14,6 +15,10 @@
       input.classList.add('error');
     }
   };
+
+  function setDrupalVersion() {
+    titleVersion.textContent = version.value;
+  }
 
   form.addEventListener('submit', function (e) {
 
@@ -37,8 +42,10 @@
       modules = (modules.length > 1) ? modules.join('+') : modules[0];
       location.href = '/' + version.value + '/' + modules;
     }
-  });
+  }, false);
 
-  input.addEventListener('keydown', error.clear);
+  input.addEventListener('keydown', error.clear, false);
+  version.addEventListener('change', setDrupalVersion, false)
 
+  setDrupalVersion();
 }());
