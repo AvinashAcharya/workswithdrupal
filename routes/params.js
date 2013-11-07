@@ -48,7 +48,7 @@ module.exports = {
         return;
       }
 
-      workswithdrupal.module(module, function (err, name, versions) {
+      workswithdrupal.checkModule(module, function (err, name, versions) {
 
         req.modules[module] = (err) ? { err: err } : new Module({
           module: module,

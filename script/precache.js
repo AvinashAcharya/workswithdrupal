@@ -1,18 +1,24 @@
 
+var redis = require('redis');
+var client = redis.createClient();
 var _ = require('underscore');
 var workswithdrupal = require(__dirname + '/../modules/workswithdrupal.js');
+var todo = 2;
 
-workswithdrupal.loadCoreModules( function (err, modules) {
+var done = function () {
+  todo--;
+  if (!todo) process.exit();
+}
 
+client.flushdb();
+
+workswithdrupal.loadCoreModules( function (err, count) {
   if (err) console.error(err);
-  else console.log(_.size(modules) + ' drupal core modules loaded');
+  console.log(count + ' drupal core modules loaded');
+  done();
+});
 
-  workswithdrupal.loadPopularModules(function (err, modules) {
-    if (err) console.error(err);
-    else {
-      console.log('---------------------------------------------');
-      console.log(_.size(modules) + ' popular modules loaded');
-    }
-    process.exit();
-  });
+workswithdrupal.loadPopularModules(function (err, modules) {
+  console.log(_.size(modules) + ' popular modules loaded');
+  done();
 });
