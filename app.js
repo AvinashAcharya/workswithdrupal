@@ -32,7 +32,8 @@ MongoClient.connect('mongodb://127.0.0.1:27017/drupal', function mongoConnect(er
   app.use(express.methodOverride());
   app.use(app.router);
   app.use(slash());
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(express.compress());
+  app.use(express.static(path.join(__dirname, 'public'), { maxAge: 86400000 * 365 }));
 
   if ('development' == app.get('env')) {
     app.use(express.errorHandler());
