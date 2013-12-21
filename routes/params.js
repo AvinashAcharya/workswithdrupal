@@ -1,13 +1,4 @@
-
-var workswithdrupal = require(__dirname + '/../modules/workswithdrupal.js');
-
-function Module(data) {
-  this.version = data.version;
-  this.module = data.module;
-  this.name = data.name;
-  this.versions = data.versions;
-  this.works = this.versions.indexOf(data.version) > -1;
-}
+var _ = require('underscore');
 
 module.exports = {
 
@@ -23,7 +14,7 @@ module.exports = {
       module: req.params.module
     };
 
-    workswithdrupal.module(data.module, function (err, name, versions) {
+    req.drupal.module(data.module, function (err, name, versions) {
 
       if (err) {
         return next(err);
@@ -44,26 +35,20 @@ module.exports = {
 
     req.modules = {};
 
-    modules.forEach(function (module) {
+    modules.forEach(function (machineName) {
 
-      var module = module.trim().toLowerCase();
+      var machineName = machineName.trim().toLowerCase();
 
-      if (!module.length) {
-        todo--
+      if (!machineName.length) {
+        todo--;
         return;
       }
 
-      workswithdrupal.checkModule(module, function (err, name, versions) {
-
-        req.modules[module] = (err) ? { err: err } : new Module({
-          module: module,
-          name: name,
-          version: req.params.version,
-          versions: versions
-        });
-
+      req.drupal.getModule(machineName, function (err, drupalModule) {
+        req.modules[machineName] = drupalModule;
         todo--;
         if (!todo) {
+          req.modules = _.sortBy(req.modules, 'name');
           next();
         }
       }.bind(this));

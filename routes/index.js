@@ -1,4 +1,4 @@
-
+var _ = require('underscore');
 var config = require(__dirname + '/../config.js');
 
 var render = function (req, res, view, data) {
@@ -25,6 +25,22 @@ module.exports = {
   },
 
   modules: function (req, res) {
-    render(req, res, 'modules', { version: req.params.version, modules: req.modules });
+
+    var modules = req.modules;
+    var grouped = {
+      work: _.filter(modules, function (m) { if (m.valid() && m.supported(req.version)) return m; }),
+      dont: _.filter(modules, function (m) { if (m.valid() && !m.supported(req.version)) return m; }),
+      notfound: _.filter(modules, function (m) { if (!m.valid()) return m; }),
+    };
+    var total = grouped.work.length + grouped.dont.length;
+    var percentage = grouped.work.length ? Math.round(grouped.work.length / total * 100) : 0;
+
+    grouped.notfound = _.sortBy(grouped.notfound, function (m) { return m.machineName; });
+
+    render(req, res, 'modules', {
+      version: req.params.version,
+      modules: grouped,
+      percentage: percentage
+    });
   }
 }

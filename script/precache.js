@@ -1,24 +1,18 @@
 
-var redis = require('redis');
-var client = redis.createClient();
-var _ = require('underscore');
-var workswithdrupal = require(__dirname + '/../modules/workswithdrupal.js');
-var todo = 2;
+var util = require('util');
+var WorksWithDrupal = require(__dirname + '/../modules/workswithdrupal.js');
+var MongoClient = require('mongodb').MongoClient;
 
-var done = function () {
-  todo--;
-  if (!todo) process.exit();
-}
+// TODO: load mongo connection from config
 
-client.flushdb();
+MongoClient.connect('mongodb://127.0.0.1:27017/drupal', function (err, db) {
 
-workswithdrupal.loadCoreModules( function (err, count) {
-  if (err) console.error(err);
-  console.log(count + ' drupal core modules loaded');
-  done();
-});
+  if (err) throw err;
 
-workswithdrupal.loadPopularModules(function (err, modules) {
-  console.log(_.size(modules) + ' popular modules loaded');
-  done();
+  var drupal = new WorksWithDrupal(db);
+
+  drupal.precache(function () {
+    util.log('done.');
+    process.exit();
+  });
 });

@@ -1,187 +1,170 @@
+'use strict';
 
+var util = require('util');
+var fs = require('fs');
+var glob = require('glob');
 var request = require('request');
 var cheerio = require('cheerio');
-var sleep = require('sleep');
 var _ = require('underscore');
-var redis = require('redis');
-var client = redis.createClient();
+var ModuleCache = require(__dirname + '/cache.js');
+var DrupalModule = require(__dirname + '/../models/DrupalModule.js');
 
-var USER_AGENT = 'WorksWithDrupal/0.1.0alpha';
+var USER_AGENT = 'WorksWithDrupal/0.0.1-alpha';
 
-var cache = {
+module.exports = WorksWithDrupal;
 
-  prefix: 'drupal:',
+function WorksWithDrupal(db) {
+  this.cache = new ModuleCache(db);
+}
 
-  get: function (key, cb) {
-    client.get(this.prefix + key, function (err, data) {
-      cb(err, JSON.parse(data));
+WorksWithDrupal.prototype = {
+
+  precache: function (cb) {
+
+    // TODO: don't flush whole cache first, just update existing modules
+    this.cache.flush(function (err, count) {
+
+      util.log(count + ' modules deleted');
+      util.log('Populating core modules...')
+
+      this.setCoreModules(function setCoreModules(err, saved) {
+
+        util.log(saved + ' core modules saved.');
+        util.log('Populating community modules...');
+
+        this.setCommunityModules(function setCommunityModules(err, saved, failed) {
+          util.log(saved + ' community modules saved, ' + failed.length + ' failed.');
+          cb();
+        });
+      }.bind(this));
+    }.bind(this));
+  },
+
+  getModule: function (machineName, cb) {
+    this.cache.get(machineName, function cacheGetModule(err, cached) {
+      if (err) return cb(err);
+      return cached
+        ? cb(null, new DrupalModule(cached))
+        : cb(new Error('"' + machineName + '" not found.'), new DrupalModule({ machineName: machineName }));
     });
   },
 
-  set: function (key, value, cb) {
-    client.set(this.prefix + key, JSON.stringify(value), function (err, result) {
-      if (typeof cb === 'function') {
-        cb(err, result);
-      }
-    });
-  }
-};
+  setCoreModules: function (cb) {
 
-client.on('error', function (err) {
-  console.log('Redis error ' + err);
-});
-
-function loadCoreModules(cb) {
-
-  var options = {
-    url: 'https://drupal.org/node/1283408',
-    headers: { 'User-Agent': USER_AGENT }
-  };
-
-  request(options,  function (err, res, body) {
-
-    if (err) return cb(err);
-
-    var $ = cheerio.load(body, { ignoreWhitespace: true });
     var count = 0;
+    var done = 0;
+    var filePath = __dirname + '/../data/core.html';
+    var cache = this.cache;
 
-    $('table:nth-child(3), table:nth-child(5)').each(function () {
+    fs.readFile(filePath, { encoding: 'utf-8' }, function readCoreModuleHtml(err, html) {
 
-      var codes = $(this).find('tbody code');
+      if (err) return cb(err, done);
 
-      codes.each(function () {
+      var $ = cheerio.load(html, { ignoreWhitespace: true });
 
-        var code = $(this);
-        var module = code.text();
-        var parent = code.closest('tr').prev();
-        var name = parent.find('th').text();
-        var supported = parent.find('td:nth-child(4)').text().match(/\d/g)
+      $('table:nth-child(3), table:nth-child(5)').each(function parseCoreModules(i, table) {
 
-        cache.set('module:' + module, { name: name, supported: supported });
-        count++;
-      });
+        var codes = $(table).find('tbody code');
+
+        codes.each(function parseCode(i, code) {
+
+          count++;
+
+          var code = $(code);
+          var parent = code.closest('tr').prev();
+          var machineName = code.text();
+          var name = parent.find('th').text();
+          var supported = parent.find('td:nth-child(4)').text().match(/\d/g);
+
+          // FIXME: DRY
+          cache.get(machineName, function (err, drupalModule) {
+
+            // merge data with an existing entry if needed
+            if (!drupalModule) {
+              drupalModule = new DrupalModule({
+                machineName: machineName,
+                name: name
+              });
+            }
+
+            drupalModule.core = _(supported).uniq().map(function (n) { return parseInt(n, 10) }).sort();
+
+            cache.set(drupalModule, function (err, result) {
+              done++;
+              if (done === count) {
+                cb(null, done);
+              }
+            });
+          });
+
+        }.bind(this));
+      }.bind(this));
     });
+  },
 
-    cb(err, count);
-  });
-};
-
-function loadPopularModules(cb) {
-
-  cache.get('popularmodules', function (err, modules) {
-
-    if (err) return cb(err);
-    if (_.size(modules)) {
-      return cb(null, modules);
-    }
+  setCommunityModules: function (cb) {
 
     var modules = {};
-    var interval = 400;
-    var pages = 5;
-    var todo = 0;
-    var options = { headers: { 'User-Agent': USER_AGENT } };
+    var cache = this.cache;
+    var count = 0;
+    var done = 0;
+    var failed = [];
 
-    for (var page=0; page<pages; page++) {
+    glob(__dirname + '/../data/community-*.html', function globPopular(err, files) {
 
-      // TODO: convert to setTimeout
-      sleep.sleep(1);
+      files.forEach(function (filePath) {
 
-      options.url = 'https://drupal.org/search/site?page=' + page + '&f[0]=ss_meta_type%3Amodule';
+        fs.readFile(filePath, { encoding: 'utf-8' }, function (err, html) {
 
-      request(options, function (err, res, body) {
+          var $ = cheerio.load(html, { ignoreWhitespace: true });
+          var projects = $('.node-project-module');
 
-        if (err) {
-          console.error(err);
-          return;
-        }
+          projects.each(function parseModuleHTML() {
 
-        var $ = cheerio.load(body, { ignoreWhitespace: true });
-        var links = $('.search-result .title a');
+            var $this = $(this);
+            var name = $this.find('h2').text().trim();
 
-        todo += links.length;
+            count++;
 
-        links.each(function (i) {
-          setTimeout((function () {
+            try {
 
-            this._module = $(this).attr('href').match(/\w+$/)[0];
+              var machineName = $this.find('h2 a').attr('href').match(/\project\/(.+)/)[1].toLowerCase();
+              var versions = $this.find('tbody .views-field-field-release-version');
+              var supported = [];
 
-            checkModule(this._module, (function (err, name, supported) {
+              versions.each(function () {
+                supported.push(parseInt($(this).text().trim()[0], 10));
+              });
 
-              if (err) console.error(this._module, err);
+              // FIXME: DRY
+              cache.get(machineName, function (err, drupalModule) {
 
-              modules[this._module] = { name: name, supported: supported };
+                // merge data with an existing entry if needed
+                if (!drupalModule) {
+                  drupalModule = new DrupalModule({
+                    machineName: machineName,
+                    name: name
+                  });
+                }
 
-              todo--;
-              if (!todo) {
-                cb(null, modules);
-              }
-            }).bind(this));
-          }).bind(this), interval * i);
-        });
-      });
-    }
-  });
-}
+                drupalModule.community = _.uniq(supported).sort()
 
-function checkModule(module, cb) {
+                cache.set(drupalModule, function (err, result) {
+                  done++;
+                  if (done === count) {
+                    cb(null, done, failed);
+                  }
+                });
+              });
 
-  var cacheKey = 'module:' + module;
+            } catch (e)  {
+              done++;
+              failed.push({ name: name, err: e });
+            }
+          });
 
-  cache.get(cacheKey, function (err, cached) {
-
-    if (err) return cb(err);
-    if (cached && cached.name.length && cached.supported.length) {
-      return cb(null, cached.name, cached.supported)
-    }
-
-    var supported = [];
-    var options = {
-      url: 'https://drupal.org/project/' + module,
-      headers: { 'User-Agent': USER_AGENT }
-    };
-
-    request(options, function (err, res, body) {
-
-      var $ = cheerio.load(body, { ignoreWhitespace: true });
-      var name = $('h1').text();
-      var versions = $('.view-project-release-download-table td.views-field-field-release-version');
-
-      if (err) {
-        return cb(err);
-      }
-
-      if (res.statusCode === 404) {
-        var error = new Error('Module "' + module + '" not found.');
-        error.code = 404;
-        return cb(error);
-      }
-
-      // sometimes drupal.org errors with a HTTP 200...
-      if (name.match('Additional uncaught')) {
-        return cb(new Error('Drupal.org error, try again'));
-      }
-
-      if (res.statusCode !== 200) {
-        return cb(new Error('Recieved bad HTTP response: ' + res.statusCode));
-      }
-
-      versions.each(function () {
-        var version = $(this).text()[0];
-        if (supported.indexOf(version) === -1) {
-          supported.push(version);
-        }
-      });
-
-      cache.set(cacheKey, { name: name, supported: supported }, function (err, result) {
-        if (err) return cb(err);
-        cb(null, name, supported);
-      });
-    });
-  });
-}
-
-module.exports = {
-  loadCoreModules: loadCoreModules,
-  loadPopularModules: loadPopularModules,
-  checkModule: checkModule
+        }.bind(this));
+      }.bind(this));
+    }.bind(this));
+  }
 };

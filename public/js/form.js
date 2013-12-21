@@ -22,19 +22,25 @@
 
   form.addEventListener('submit', function (e) {
 
+    e.preventDefault();
+
+    var text = input.value;
     var modules = [];
 
-    input.value.split('\n').forEach(function (module) {
+    if (drush.isPmList(text)) {
+      modules = drush.parsePmList(text);
+    } else {
 
-      // TODO: strip any non [a-z_] chars
-      var module = module.trim().toLowerCase();
+      text.split('\n').forEach(function (module) {
 
-      if (module.length) {
-        modules.push(module);
-      }
-    });
+        // TODO: strip any non [a-z_] chars
+        var module = module.trim().toLowerCase();
 
-    e.preventDefault();
+        if (module.length) {
+          modules.push(module);
+        }
+      });
+    }
 
     if (!modules.length) {
       error.show();
@@ -42,6 +48,7 @@
       modules = (modules.length > 1) ? modules.join('+') : modules[0];
       location.href = '/' + version.value + '/' + modules;
     }
+
   }, false);
 
   input.addEventListener('keydown', error.clear, false);

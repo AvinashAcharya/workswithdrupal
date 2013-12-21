@@ -1,22 +1,61 @@
 extends layout
 block content
 
-  h1 Works with Drupal #{version}?
+  h1 #{percentage}% compatibility with Drupal #{version}
 
-  ul.modules
-    each module in modules
-      if module.works
+  //- a(href='/') ←
+
+  if percentage < 100 || modules.notfound.length
+    p
+      b #{modules.work.length}&nbsp;
+      if modules.work.length == 1
+        | works.
+      else
+        | work.
+
+      | &nbsp;
+
+      if modules.dont.length
+        b #{modules.dont.length}&nbsp;
+        if modules.dont.length > 1
+          | don't.
+        else
+          | doesn't.
+
+      | &nbsp;
+
+      if modules.notfound.length
+        input(type='checkbox', id='show-hidden')
+
+      if modules.notfound.length
+        label(for='show-hidden').unknown show #{modules.notfound.length} unknown&nbsp;
+          if modules.notfound.length > 1
+            | modules.
+          else
+            | module.
+
+
+  if modules.work.length
+    ul.modules
+      each module in modules.work
         li.module.yes
           span.symbol ✔
-          a(href='https://drupal.org/project/' + module.module) #{module.name}
-      else if !module.err
+          a(href='https://drupal.org/project/' + module.machineName) #{module.name}
+          span.supported  #{module.supported().join(', ')}
+
+  if modules.dont.length
+    ul.modules
+      each module in modules.dont
         li.module.no
           span.symbol ✘
-          a(href='https://drupal.org/project/' + module.module) #{module.name}
-      else
+          a(href='https://drupal.org/project/' + module.machineName) #{module.name}
+          span.supported  #{module.supported().join(', ')}
+
+  if modules.notfound.length
+    ul.modules.modules-not-found.hidden
+      each module in modules.notfound
         li.module.error
           span.symbol ✘
-          | #{module.err}
+          | #{module.machineName}
 
-  p
-    a(href='/') Check more
+  script(src='/js/modules.js')

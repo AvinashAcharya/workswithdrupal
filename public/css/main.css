@@ -10,13 +10,16 @@ h1 {
 }
 
 .content {
-  max-width: 300px;
   margin: 0 auto;
 }
 
-ul.modules {
+.modules {
   list-style-type: none;
   padding-left: 0;
+  display: inline-block;
+  vertical-align: top;
+  width: 300px;
+  margin: 0;
 }
 
 .module {
@@ -24,6 +27,7 @@ ul.modules {
   padding: 0.5ex;
   border: solid 1px;
   text-align: left;
+  overflow: auto;
 }
 
 .module a {
@@ -53,6 +57,13 @@ ul.modules {
   border-color: #ebccd1;
 }
 
+.supported {
+  display: inline-block;
+  float: right;
+  font-size: 90%;
+  font-style: italic;
+}
+
 a {
   color: #00B7FF;
 }
@@ -60,8 +71,18 @@ a {
 textarea {
   width: 100%;
   height: 100px;
+  max-width: 300px;
 }
 
 textarea.error {
   border: solid 1px #FF8040;
+}
+
+.unknown {
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.hidden {
+  display: none;
 }
