@@ -1,5 +1,6 @@
 var _ = require('underscore');
 var config = require(__dirname + '/../config.js');
+var drush = require(__dirname + '/../public/js/drush.js');
 
 var render = function (req, res, view, data) {
   if (req.is('json')) {
@@ -19,9 +20,15 @@ module.exports = {
   },
 
   formRedirect: function (req, res) {
-    var modules = req.body.module.split(/[\r\n]+/);
-    // TODO: trim / lowercase / sanitise module strings
-    res.redirect(req.body.version + '/' + modules.join('+'));
+
+    drush.parseModules(req.body.module, function (modules) {
+      if (!modules.length) {
+        // FIXME: set error flash message
+        res.redirect('/');
+      } else {
+        res.redirect(req.body.version + '/' + drush.modulesToUrl(modules));
+      }
+    });
   },
 
   modules: function (req, res) {

@@ -23,7 +23,35 @@ var drush = (function () {
       } while (match !== null);
 
       return modules;
+    },
+
+    parseModules: function (text, cb) {
+
+      var modules = [];
+
+      if (this.isPmList(text)) {
+        modules = this.parsePmList(text);
+      } else {
+
+        text.split('\n').forEach(function (module) {
+
+          // TODO: strip any non [a-z_] chars
+          var module = module.trim().toLowerCase();
+
+          if (module.length) {
+            modules.push(module);
+          }
+        });
+      }
+
+      cb(modules);
+    },
+
+    modulesToUrl: function (modules) {
+      return (modules.length > 1) ? modules.join('+') : modules[0];
     }
   }
 
 })();
+
+if (module && module.exports) module.exports = drush;

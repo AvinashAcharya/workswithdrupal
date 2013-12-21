@@ -27,27 +27,14 @@
     var text = input.value;
     var modules = [];
 
-    if (drush.isPmList(text)) {
-      modules = drush.parsePmList(text);
-    } else {
-
-      text.split('\n').forEach(function (module) {
-
-        // TODO: strip any non [a-z_] chars
-        var module = module.trim().toLowerCase();
-
-        if (module.length) {
-          modules.push(module);
-        }
-      });
-    }
-
-    if (!modules.length) {
-      error.show();
-    } else {
-      modules = (modules.length > 1) ? modules.join('+') : modules[0];
-      location.href = '/' + version.value + '/' + modules;
-    }
+    drush.parseModules(text, function (modules) {
+      if (!modules.length) {
+        error.show();
+      } else {
+        modules = drush.modulesToUrl(modules);
+        location.href = '/' + version.value + '/' + modules;
+      }
+    });
 
   }, false);
 
