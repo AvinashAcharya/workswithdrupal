@@ -19,7 +19,7 @@ function DrupalModule (data) {
 };
 
 DrupalModule.prototype.supported = function (version) {
-  var supported = this.community.concat(this.core).sort();
+  var supported = _.uniq(this.community.concat(this.core)).sort();
   return version ? _.contains(supported, parseInt(version, 10)) : supported;
 };
 
