@@ -39,7 +39,7 @@ block content
       each module in modules.work
         li.module.yes
           span.symbol ✔
-          a(href='https://drupal.org/project/' + module.machineName) #{module.name}
+          a(href=module.url()) #{module.name}
           span.supported  #{module.supported().join(', ')}
 
   if modules.dont.length
@@ -47,7 +47,7 @@ block content
       each module in modules.dont
         li.module.no
           span.symbol ✘
-          a(href='https://drupal.org/project/' + module.machineName) #{module.name}
+          a(href=module.url()) #{module.name}
           span.supported  #{module.supported().join(', ')}
 
   if modules.notfound.length

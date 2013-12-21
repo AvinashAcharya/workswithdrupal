@@ -27,7 +27,12 @@ DrupalModule.prototype.works = function (version) {
   return this.supported().indexOf(version) > -1;
 };
 
-
 DrupalModule.prototype.valid = function () {
   return this.machineName && this.name;
+};
+
+DrupalModule.prototype.url = function () {
+  return this.community.length
+    ? 'http://drupal.org/project/' + this.machineName
+    : 'https://drupal.org/node/1283408';
 };
