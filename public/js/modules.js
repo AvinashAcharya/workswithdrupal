@@ -9,6 +9,7 @@
     unknownModules.classList[showHidden.checked ? 'remove' : 'add']('hidden');
   }
 
+  document.querySelector('.show-hidden').style.display = 'inline';
   showHidden.addEventListener('click', toggleUnknownModules, false);
 
 }());

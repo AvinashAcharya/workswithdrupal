@@ -25,14 +25,13 @@ block content
       | &nbsp;
 
       if modules.notfound.length
-        input(type='checkbox', id='show-hidden')
-
-      if modules.notfound.length
-        label(for='show-hidden').unknown show #{modules.notfound.length} unknown&nbsp;
-          if modules.notfound.length > 1
-            | modules.
-          else
-            | module.
+        span.show-hidden(style='display:none')
+          input(type='checkbox', id='show-hidden')
+          label(for='show-hidden').unknown show #{modules.notfound.length} unknown&nbsp;
+            if modules.notfound.length > 1
+              | modules.
+            else
+              | module.
 
 
   if modules.work.length
