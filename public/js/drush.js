@@ -6,6 +6,7 @@ var drush = (function () {
   return {
 
     isPmList: function (text) {
+      if (!text) return false;
       return /Package\s+Name\s+Type\s+Status\s+Version/.test(text.trim())
     },
 
@@ -28,6 +29,10 @@ var drush = (function () {
     parseModules: function (text, cb) {
 
       var modules = [];
+
+      if (!text) {
+        return cb(new Error('no data given'), modules);
+      }
 
       if (this.isPmList(text)) {
         modules = this.parsePmList(text);
