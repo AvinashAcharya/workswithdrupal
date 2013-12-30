@@ -19,6 +19,11 @@ module.exports = {
     });
   },
 
+
+  about: function (req, res) {
+    res.render('about');
+  },
+
   formRedirect: function (req, res) {
 
     drush.parseModules(req.body.module, function (modules) {

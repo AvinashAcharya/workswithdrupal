@@ -5,7 +5,6 @@
   var form = document.getElementById('single');
   var input = document.getElementById('module');
   var version = document.getElementById('version');
-  var titleVersion = document.querySelector('.title .version');
 
   var error = {
     clear: function () {
@@ -17,7 +16,10 @@
   };
 
   function setDrupalVersion() {
-    titleVersion.textContent = version.value;
+    var versions = document.getElementsByClassName('version');
+    for (var i=0; i<versions.length; i++) {
+      versions.item(i).textContent = version.value;
+    }
   }
 
   form.addEventListener('submit', function (e) {

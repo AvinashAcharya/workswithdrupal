@@ -1,4 +1,3 @@
-
 var express = require('express');
 var http = require('http');
 var slash = require('express-slash');
@@ -9,7 +8,6 @@ var config = require(__dirname + '/config.js');
 var routes = require(__dirname + '/routes');
 var params = require(__dirname + '/routes/params');
 var WorksWithDrupal = require(__dirname + '/modules/workswithdrupal.js');
-var cronJob = require('cron').CronJob;
 
 var app = express();
 
@@ -50,6 +48,7 @@ MongoClient.connect('mongodb://127.0.0.1:27017/drupal', function mongoConnect(er
   app.param('modules', params.modules);
 
   app.get('/', routes.index);
+  app.get('/about', routes.about);
   app.get('/:version([6-9])', routes.index);
   app.post('/', routes.formRedirect);
   app.get('/:version([6-9])/:modules([0-9a-z_+]+)', routes.modules);
@@ -57,12 +56,4 @@ MongoClient.connect('mongodb://127.0.0.1:27017/drupal', function mongoConnect(er
   http.createServer(app).listen(app.get('port'), function createServer() {
     console.log('Express server listening on port ' + app.get('port'));
   });
-
-  // new cronJob('0 0 * * * *', function () {
-  //   drupal.precache(function (err) {
-  //     if (err) console.error(err);
-  //     console.log('precached modules.');
-  //     process.exit();
-  //   });
-  // }, null, true, config.timezone);
 });

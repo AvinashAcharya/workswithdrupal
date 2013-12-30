@@ -1,13 +1,14 @@
 extends layout
 block content
 
-  h1.title
-    | Works with Drupal <span class="version">x</span>?
+  h1.title Works with Drupal <span class="version">x</span>?
+
+  p Check if your modules are ready for Drupal <span class="version">x</span>. Enter the machine names of each module below or paste the results of <code>drush pm-list</code>.
 
   form(id='single', method='post', action='/')
 
     div
-      textarea(name='module', id='module', placeholder='Modules (separate multiple with a new line, you may also paste the results of "drush pm-list")')
+      textarea(name='module', id='module', placeholder='Modules (seperate multiple with a new line)')
 
     select(name='version', id='version')
       each version in versions
