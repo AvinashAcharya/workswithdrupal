@@ -19,7 +19,6 @@ module.exports = {
     });
   },
 
-
   about: function (req, res) {
     res.render('about');
   },
@@ -53,6 +52,13 @@ module.exports = {
       version: req.params.version,
       modules: grouped,
       percentage: percentage
+    });
+  },
+
+  statistics: function (req, res) {
+
+    render(req, res, 'statistics', {
+
     });
   }
 }

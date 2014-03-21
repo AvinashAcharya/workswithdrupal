@@ -5,14 +5,20 @@ module.exports = DrupalModule;
 
 function DrupalModule (data) {
 
+  this.type = null;
   this.machineName = null;
   this.name = null;
+  this.link = null;
+  this.creator = null;
   this.community = [];
   this.core = [];
 
   if (data) {
+    this.type = data.type || null;
     this.machineName = data.machineName || null;
     this.name = data.name || null;
+    this.link = data.link || null;
+    this.creator = data.creator || null;
     this.community = data.community || [];
     this.core = data.core || [];
   }
@@ -32,7 +38,7 @@ DrupalModule.prototype.valid = function () {
 };
 
 DrupalModule.prototype.url = function () {
-  return this.community.length
-    ? 'http://drupal.org/project/' + this.machineName
-    : 'https://drupal.org/node/1283408';
+  if (this.link.length) return this.link;
+  else if (this.community.length) return 'http://drupal.org/project/' + this.machineName;
+  else return 'https://drupal.org/node/1283408';
 };

@@ -2,7 +2,7 @@
 
 var util = require('util');
 var fs = require('fs');
-var glob = require('glob');
+var xml2js = require('xml2js');
 var request = require('request');
 var cheerio = require('cheerio');
 var _ = require('underscore');
@@ -10,6 +10,7 @@ var ModuleCache = require(__dirname + '/cache.js');
 var DrupalModule = require(__dirname + '/../models/DrupalModule.js');
 
 var USER_AGENT = 'WorksWithDrupal/0.0.1-alpha';
+var CORE_MODULE_URL = 'https://drupal.org/node/1283408';
 
 module.exports = WorksWithDrupal;
 
@@ -38,15 +39,6 @@ WorksWithDrupal.prototype = {
         });
       }.bind(this));
     }.bind(this));
-  },
-
-  getModule: function (machineName, cb) {
-    this.cache.get(machineName, function cacheGetModule(err, cached) {
-      if (err) return cb(err);
-      return cached
-        ? cb(null, new DrupalModule(cached))
-        : cb(new Error('"' + machineName + '" not found.'), new DrupalModule({ machineName: machineName }));
-    });
   },
 
   setCoreModules: function (cb) {
@@ -83,7 +75,9 @@ WorksWithDrupal.prototype = {
             if (!drupalModule) {
               drupalModule = new DrupalModule({
                 machineName: machineName,
-                name: name
+                type: 'project_module',
+                name: name,
+                link: CORE_MODULE_URL
               });
             }
 
@@ -108,63 +102,114 @@ WorksWithDrupal.prototype = {
     var cache = this.cache;
     var count = 0;
     var done = 0;
+    var supported = [];
     var failed = [];
 
-    glob(__dirname + '/../data/community-*.html', function globPopular(err, files) {
+    fs.readFile(__dirname + '/../data/community.xml', function(err, data) {
+      xml2js.parseString(data, function (err, community) {
 
-      files.forEach(function (filePath) {
+        count = community.projects.project.length;
 
-        fs.readFile(filePath, { encoding: 'utf-8' }, function (err, html) {
+        community.projects.project.forEach(function (project) {
 
-          var $ = cheerio.load(html, { ignoreWhitespace: true });
-          var projects = $('.node-project-module');
+          var api_versions;
+          var versions = [];
+          var machineName = project.short_name[0].trim();
 
-          projects.each(function parseModuleHTML() {
+          cache.get(machineName, function (err, drupalModule) {
 
-            var $this = $(this);
-            var name = $this.find('h2').text().trim();
-
-            count++;
-
-            try {
-
-              var machineName = $this.find('h2 a').attr('href').match(/\project\/(.+)/)[1].toLowerCase();
-              var versions = $this.find('tbody .views-field-field-release-version');
-              var supported = [];
-
-              versions.each(function () {
-                supported.push(parseInt($(this).text().trim()[0], 10));
+            if (!drupalModule) {
+              drupalModule = new DrupalModule({
+                machineName: project.short_name[0].trim(),
+                type: project.type[0].trim(),
+                name: project.title[0].trim(),
+                link: project.link[0].trim(),
+                creator: project['dc:creator'][0].trim()
               });
-
-              // FIXME: DRY
-              cache.get(machineName, function (err, drupalModule) {
-
-                // merge data with an existing entry if needed
-                if (!drupalModule) {
-                  drupalModule = new DrupalModule({
-                    machineName: machineName,
-                    name: name
-                  });
-                }
-
-                drupalModule.community = _.uniq(supported).sort()
-
-                cache.set(drupalModule, function (err, result) {
-                  done++;
-                  if (done === count) {
-                    cb(null, done, failed);
-                  }
-                });
-              });
-
-            } catch (e)  {
-              done++;
-              failed.push({ name: name, err: e });
             }
-          });
 
-        }.bind(this));
-      }.bind(this));
-    }.bind(this));
+            if (project.api_versions) {
+              api_versions = project.api_versions[0].api_version;
+              for (var i = api_versions.length - 1; i >= 0; i--) {
+                versions.push(parseInt(api_versions[i].replace('.x', ''), 10));
+              };
+              drupalModule.community = _.uniq(versions).sort();
+            }
+
+            cache.set(drupalModule, function (err, result) {
+              done++;
+              if (done === count) {
+                cb(null, done, failed);
+              }
+            });
+          });
+        });
+      });
+    });
+  },
+
+  getModule: function (machineName, cb) {
+    this.cache.get(machineName, function cacheGetModule(err, cached) {
+      if (err) return cb(err);
+      return cached
+        ? cb(null, new DrupalModule(cached))
+        : cb(new Error('"' + machineName + '" not found.'), new DrupalModule({ machineName: machineName }));
+    });
+  },
+
+  // TODO: cache everything below this line ------------------------------------
+
+  getVersions: function (cb) {
+
+    var versions = [];
+    cb = _.after(2, cb);
+
+    var addVersions = function (err, result) {
+      versions = versions.concat(result);
+      cb(err, _.uniq(versions).sort());
+    };
+
+    this.cache.collection.distinct('core', addVersions);
+    this.cache.collection.distinct('community', addVersions);
+  },
+
+  getByVersion: function (version, cb) {
+
+    var query = {
+      $or: [
+        { community: { $in: [version] } },
+        { core: { $in: [version] } }
+      ]
+    };
+
+    this.cache.collection.find(query, function findByVersion(err, results) {
+      results.toArray(function (err, modules) {
+        // TODO: instanciate new DrupalModule for each one
+        cb(err, modules);
+      });
+    });
+  },
+
+  statistics: function () {
+    return {
+
+      modulesPerVersion: function (cb) {
+
+        var results = {};
+
+        this.getVersions(function getVersions(err, versions) {
+
+          cb = _.after(versions.length, cb);
+
+          versions.forEach(function (version) {
+            this.getByVersion(version, function getByVersion(err, modules) {
+              results[version] = modules.length;
+              cb(err, results);
+            });
+          }.bind(this));
+
+        }.bind(this))
+      }.bind(this)
+    }
   }
 };

@@ -49,6 +49,7 @@ MongoClient.connect('mongodb://127.0.0.1:27017/drupal', function mongoConnect(er
 
   app.get('/', routes.index);
   app.get('/about', routes.about);
+  app.get('/statistics', routes.statistics);
   app.get('/:version([6-9])', routes.index);
   app.post('/', routes.formRedirect);
   app.get('/:version([6-9])/:modules([0-9a-z_+]+)', routes.modules);
