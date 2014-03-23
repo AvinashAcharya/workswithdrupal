@@ -1,6 +1,7 @@
 
 'use strict';
 
+var _ = require('underscore');
 var should = require('should');
 var fixtures = require('pow-mongodb-fixtures').connect('moduletest');
 var WorksWithDrupal = require(__dirname + '/../modules/workswithdrupal.js');
@@ -94,9 +95,30 @@ describe('Statistics', function () {
 });
 
 describe('Misc', function () {
-  it('returns a list of available versions', function (done) {
+
+  it('gets a list of available versions', function (done) {
     drupal.getVersions(function (err, versions) {
       versions.should.eql([1, 2, 3, 4]);
+      done();
+    });
+  });
+
+  it('gets all modules by version', function (done) {
+    done = _.after(4, done);
+    drupal.getByVersion(1, function (err, modules) {
+      modules.should.have.lengthOf(4);
+      done();
+    });
+    drupal.getByVersion(2, function (err, modules) {
+      modules.should.have.lengthOf(4);
+      done();
+    });
+    drupal.getByVersion(3, function (err, modules) {
+      modules.should.have.lengthOf(2);
+      done();
+    });
+    drupal.getByVersion(4, function (err, modules) {
+      modules.should.have.lengthOf(1);
       done();
     });
   });
