@@ -34,11 +34,11 @@ DrupalModule.prototype.works = function (version) {
 };
 
 DrupalModule.prototype.valid = function () {
-  return this.machineName && this.name;
+  return !!(this.machineName && this.name);
 };
 
 DrupalModule.prototype.url = function () {
-  if (this.link.length) return this.link;
+  if (this.link && this.link.length) return this.link;
   else if (this.community.length) return 'http://drupal.org/project/' + this.machineName;
   else return 'https://drupal.org/node/1283408';
 };

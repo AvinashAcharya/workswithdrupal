@@ -4,6 +4,7 @@
 var should = require('should');
 var fixtures = require('pow-mongodb-fixtures').connect('moduletest');
 var WorksWithDrupal = require(__dirname + '/../modules/workswithdrupal.js');
+var DrupalModule = require(__dirname + '/../models/DrupalModule.js');
 var drupal;
 
 beforeEach(function (done) {
@@ -13,7 +14,43 @@ beforeEach(function (done) {
   });
 });
 
-describe('Module', function () {
+describe('DrupalModule', function () {
+
+  it('can check if its data is valid', function (done) {
+
+    var module = new DrupalModule();
+    module.valid().should.be.false;
+
+    module.machineName = 'test';
+    module.valid().should.be.false;
+
+    module.machineName = null;
+    module.name = 'test';
+    module.valid().should.be.false;
+
+    module.machineName = 'test';
+    module.name = 'test';
+    module.valid().should.be.true;
+
+    done();
+  });
+
+  it('should merge community and core modules into "supported"', function (done) {
+    var module = new DrupalModule({
+      core: [1, 2],
+      community: [3, 4]
+    });
+    module.supported().should.eql([1, 2, 3, 4]);
+    done();
+  });
+
+  it('checks if a module supports a given version', function (done) {
+    var module = new DrupalModule({ core: [1], community: [2] });
+    module.works(1).should.be.true;
+    module.works(2).should.be.true;
+    module.works(3).should.be.false;
+    done();
+  });
 
   it('should get a single module', function (done) {
     drupal.getModule('test_1', function (err, module) {
@@ -30,14 +67,20 @@ describe('Module', function () {
     done();
   });
 
-  it('returns a list of available versions', function (done) {
-    drupal.getVersions(function (err, versions) {
-      versions.should.eql([1, 2, 3, 4]);
-      done();
+  it('should return the correct url', function (done) {
+    var module = new DrupalModule({
+      machineName: 'test',
+      link: 'http://example.org',
+      community: [1, 2],
+      core: [3]
     });
+    module.url().should.equal('http://example.org');
+    delete module.link;
+    module.url().should.equal('http://drupal.org/project/test');
+    module.community = [];
+    module.url().should.equal('https://drupal.org/node/1283408');
+    done();
   });
-
-  // TODO: return correct url based on type of module / link isset, etc.
 });
 
 describe('Statistics', function () {
@@ -50,3 +93,11 @@ describe('Statistics', function () {
   });
 });
 
+describe('Misc', function () {
+  it('returns a list of available versions', function (done) {
+    drupal.getVersions(function (err, versions) {
+      versions.should.eql([1, 2, 3, 4]);
+      done();
+    });
+  });
+});
