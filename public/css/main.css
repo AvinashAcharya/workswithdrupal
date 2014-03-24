@@ -26,6 +26,10 @@ h1 {
   font-size: 1.2em;
 }
 
+h2 {
+  font-size: 1.1em;
+}
+
 .about {
   text-align: justify;
   max-width: 69ex;

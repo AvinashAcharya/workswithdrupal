@@ -3,7 +3,13 @@ block content
 
   h1.title Drupal Statistics
 
+  div.statistics
+    h2 Supported Modules per Drupal Version
+    canvas#modules-per-version(@style="width:800;height:400")
 
+  script(type='text/javascript').
+    var statistics = !{JSON.stringify(statistics)};
 
   script(src='/js/vendor/Chart.min.js')
+  script(src='/js/vendor/underscore-min.js')
   script(src='/js/statistics.js')

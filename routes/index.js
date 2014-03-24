@@ -57,8 +57,16 @@ module.exports = {
 
   statistics: function (req, res) {
 
-    render(req, res, 'statistics', {
+    var data = {};
+    var reports = req.drupal.statistics();
 
+    _.each(reports, function (report, name) {
+      report(function (err, results) {
+        data[name] = results;
+        if (_.size(data) === _.size(reports)) {
+          render(req, res, 'statistics', { statistics: data });
+        }
+      });
     });
   }
 }
