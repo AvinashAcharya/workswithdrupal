@@ -3,6 +3,7 @@
 
 var _ = require('underscore');
 var should = require('should');
+var config = require(__dirname + '/config.js');
 var fixtures = require('pow-mongodb-fixtures').connect('moduletest');
 var WorksWithDrupal = require(__dirname + '/../modules/workswithdrupal.js');
 var DrupalModule = require(__dirname + '/../models/DrupalModule.js');
@@ -122,4 +123,8 @@ describe('Misc', function () {
       done();
     });
   });
+});
+
+describe('REST API', function () {
+
 });
