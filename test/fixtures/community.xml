@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<projects xmlns:dc="http://purl.org/dc/elements/1.1/">
+ <project>
+  <title>Views</title>
+  <short_name>views</short_name>
+  <link>https://drupal.org/project/views</link>
+  <dc:creator>merlinofchaos</dc:creator>
+  <type>project_module</type>
+  <terms>
+   <term><name>Development status</name><value>Under active development</value></term>
+   <term><name>Maintenance status</name><value>Actively maintained</value></term>
+   <term><name>Projects</name><value>Modules</value></term>
+  </terms>
+  <project_status>published</project_status>
+  <api_versions>
+   <api_version>8.x</api_version>
+   <api_version>7.x</api_version>
+   <api_version>6.x</api_version>
+   <api_version>5.x</api_version>
+   <api_version>4.7.x</api_version>
+   <api_version>4.6.x</api_version>
+  </api_versions>
+ </project>
+ <project>
+  <title>ZURB Interchange</title>
+  <short_name>zurb_interchange</short_name>
+  <link>https://drupal.org/project/zurb_interchange</link>
+  <dc:creator>kevinquillen</dc:creator>
+  <type>project_module</type>
+  <terms>
+   <term><name>Development status</name><value>Under active development</value></term>
+   <term><name>Maintenance status</name><value>Actively maintained</value></term>
+   <term><name>Module categories</name><value>Content Display</value></term>
+   <term><name>Module categories</name><value>JavaScript Utilities</value></term>
+   <term><name>Module categories</name><value>Theme Enhancements</value></term>
+   <term><name>Module categories</name><value>Utility</value></term>
+   <term><name>Projects</name><value>Modules</value></term>
+  </terms>
+  <project_status>published</project_status>
+  <api_versions>
+   <api_version>7.x</api_version>
+  </api_versions>
+ </project>
+ <project>
+  <title>ZURB TwentyTwenty</title>
+  <short_name>zurb_twentytwenty</short_name>
+  <link>https://drupal.org/project/zurb_twentytwenty</link>
+  <dc:creator>kevinquillen</dc:creator>
+  <type>project_module</type>
+  <terms>
+   <term><name>Development status</name><value>Under active development</value></term>
+   <term><name>Maintenance status</name><value>Actively maintained</value></term>
+   <term><name>Module categories</name><value>Content Display</value></term>
+   <term><name>Module categories</name><value>JavaScript Utilities</value></term>
+   <term><name>Module categories</name><value>Theme Enhancements</value></term>
+   <term><name>Module categories</name><value>Utility</value></term>
+   <term><name>Projects</name><value>Modules</value></term>
+  </terms>
+  <project_status>published</project_status>
+  <api_versions>
+   <api_version>7.x</api_version>
+  </api_versions>
+ </project>
+ <project>
+  <title>Zurmo</title>
+  <short_name>zurmo</short_name>
+  <link>https://drupal.org/project/zurmo</link>
+  <dc:creator>Frans</dc:creator>
+  <type>project_module</type>
+  <terms>
+   <term><name>Development status</name><value>Under active development</value></term>
+   <term><name>Maintenance status</name><value>Seeking co-maintainer(s)</value></term>
+   <term><name>Projects</name><value>Modules</value></term>
+  </terms>
+  <project_status>published</project_status>
+  <api_versions>
+   <api_version>7.x</api_version>
+  </api_versions>
+ </project>
+ <project>
+  <title>zanox Web Services Integration</title>
+  <short_name>zws</short_name>
+  <link>https://drupal.org/project/zws</link>
+  <dc:creator>yaph</dc:creator>
+  <type>project_module</type>
+  <terms>
+   <term><name>Module categories</name><value>Commerce/Advertising</value></term>
+   <term><name>Development status</name><value>Obsolete</value></term>
+   <term><name>Maintenance status</name><value>Unsupported</value></term>
+   <term><name>Module categories</name><value>Third-party Integration</value></term>
+   <term><name>Projects</name><value>Modules</value></term>
+  </terms>
+  <project_status>published</project_status>
+ </project>
+ <project>
+  <title>zxcvbn</title>
+  <short_name>zxcvbn</short_name>
+  <link>https://drupal.org/project/zxcvbn</link>
+  <dc:creator>Yorirou</dc:creator>
+  <type>project_module</type>
+  <terms>
+   <term><name>Development status</name><value>Under active development</value></term>
+   <term><name>Maintenance status</name><value>Actively maintained</value></term>
+   <term><name>Projects</name><value>Modules</value></term>
+  </terms>
+  <project_status>published</project_status>
+  <api_versions>
+   <api_version>7.x</api_version>
+  </api_versions>
+ </project>
+</projects>

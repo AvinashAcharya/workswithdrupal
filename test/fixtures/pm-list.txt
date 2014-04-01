@@ -1,0 +1,10 @@
+ Package                                Name                                                    Type    Status         Version
+ Chaos tool suite                       Chaos tools (ctools)                                    Module  Enabled        7.x-1.2
+ Charting                               Chart API (chart)                                       Module  Enabled        7.x-1.1
+ Core                                   Block (block)                                           Module  Enabled        7.15
+ Core                                   Blog (blog)                                             Module  Not installed  7.15
+ Core                                   Book (book)                                             Module  Not installed  7.15
+ Date/Time                              Calendar (calendar)                                     Module  Enabled        7.x-3.4
+ Date/Time                              Date (date)                                             Module  Enabled        7.x-2.6
+ Core                                   Seven (seven)                                           Theme   Enabled        7.15
+ Core                                   Stark (stark)                                           Theme   Disabled       7.15

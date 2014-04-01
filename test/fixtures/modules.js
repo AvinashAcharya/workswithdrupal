@@ -32,9 +32,9 @@ exports.modules = [
   },
   {
     type: TYPE_MODULE,
-    machineName: 'test_3',
-    name: 'Test Module 3',
-    link: 'http://example.org/3',
+    machineName: 'test_4',
+    name: 'Test Module 4',
+    link: 'http://example.org/4',
     creator: 'Test User 2',
     community: [2, 1, 3],
     core: []

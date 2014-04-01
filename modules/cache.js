@@ -11,8 +11,8 @@ function ModuleCache(db) {
 
 ModuleCache.prototype = {
 
-  get: function (machinename, cb) {
-    this.collection.findOne({ machineName: machinename }, function cacheFind(err, module) {
+  get: function (machineName, cb) {
+    this.collection.findOne({ machineName: machineName }, function cacheFind(err, module) {
       cb(err, module)
     });
   },

@@ -8,5 +8,6 @@ module.exports = {
     host: '127.0.0.1',
     port: 27017,
     db: 'drupal'
-  }
+  },
+  dataDir: __dirname + '/data'
 };

@@ -11,19 +11,22 @@ var WorksWithDrupal = require(__dirname + '/modules/workswithdrupal.js');
 var server;
 var app = express();
 
-module.exports.app = app;
-module.exports.start = start;
-module.exports.close = close;
+function start (config, cb, drupal) {
 
-function start (config, cb) {
+  var versions = config.drupalVersions.sort();
+  var versionRange = versions[0] + '-' + versions[versions.length-1];
 
-  var mongodb = 'mongodb://' + config.mongodb.host + ':' + config.mongodb.port + '/' + config.mongodb.db;
+  if (!drupal) {
 
-  MongoClient.connect(mongodb, function mongoConnect(err, db) {
+    MongoClient.connect(
+      'mongodb://' + config.mongodb.host + ':' + config.mongodb.port + '/' + config.mongodb.db,
+      function mongoConnect(err, db) {
+        if (err) throw err;
+        start(config, cb, new WorksWithDrupal(db));
+      }
+    );
 
-    if (err) throw err;
-
-    var drupal = new WorksWithDrupal(db);
+  } else {
 
     app.use(function (req, res, next) {
       req.drupal = drupal;
@@ -58,15 +61,19 @@ function start (config, cb) {
     app.get('/', routes.index);
     app.get('/about', routes.about);
     app.get('/statistics', routes.statistics);
-    app.get('/:version([6-9])', routes.index);
+    app.get('/:version([' + versionRange + '])', routes.index);
     app.post('/', routes.formRedirect);
-    app.get('/:version([6-9])/:modules([0-9a-z_+]+)', routes.modules);
+    app.get('/:version([' + versionRange + '])/:modules([0-9a-z_+]+)', routes.modules);
 
     server = http.createServer(app);
     server.listen(app.get('port'), cb);
-  });
+  }
 }
 
 function close(cb) {
   server.close(cb);
 }
+
+module.exports.app = app;
+module.exports.start = start;
+module.exports.close = close;

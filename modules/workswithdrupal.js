@@ -14,27 +14,36 @@ var CORE_MODULE_URL = 'https://drupal.org/node/1283408';
 
 module.exports = WorksWithDrupal;
 
-function WorksWithDrupal(db) {
+function WorksWithDrupal(db, config) {
   this.cache = new ModuleCache(db);
+  this.config = config;
 }
 
 WorksWithDrupal.prototype = {
 
-  precache: function (cb) {
+  precache: function (cb, verbose) {
+
+    verbose = verbose || false;
 
     // TODO: don't flush whole cache first, just update existing modules
     this.cache.flush(function (err, count) {
 
-      util.log(count + ' modules deleted');
-      util.log('Populating core modules...')
+      if (verbose) {
+        util.log(count + ' modules deleted');
+        util.log('Populating core modules...')
+      }
 
       this.setCoreModules(function setCoreModules(err, saved) {
 
-        util.log(saved + ' core modules saved.');
-        util.log('Populating community modules...');
+        if (verbose) {
+          util.log(saved + ' core modules saved.');
+          util.log('Populating community modules...');
+        }
 
         this.setCommunityModules(function setCommunityModules(err, saved, failed) {
-          util.log(saved + ' community modules saved, ' + failed.length + ' failed.');
+          if (verbose) {
+            util.log(saved + ' community modules saved, ' + failed.length + ' failed.');
+          }
           cb();
         });
       }.bind(this));
@@ -45,7 +54,7 @@ WorksWithDrupal.prototype = {
 
     var count = 0;
     var done = 0;
-    var filePath = __dirname + '/../data/core.html';
+    var filePath = this.config.dataDir + '/core.html';
     var cache = this.cache;
 
     fs.readFile(filePath, { encoding: 'utf-8' }, function readCoreModuleHtml(err, html) {
@@ -105,7 +114,7 @@ WorksWithDrupal.prototype = {
     var supported = [];
     var failed = [];
 
-    fs.readFile(__dirname + '/../data/community.xml', function(err, data) {
+    fs.readFile(this.config.dataDir + '/community.xml', function(err, data) {
       xml2js.parseString(data, function (err, community) {
 
         count = community.projects.project.length;
@@ -113,7 +122,7 @@ WorksWithDrupal.prototype = {
         community.projects.project.forEach(function (project) {
 
           var api_versions;
-          var versions = [];
+          var version, versions = [];
           var machineName = project.short_name[0].trim();
 
           cache.get(machineName, function (err, drupalModule) {
@@ -131,7 +140,10 @@ WorksWithDrupal.prototype = {
             if (project.api_versions) {
               api_versions = project.api_versions[0].api_version;
               for (var i = api_versions.length - 1; i >= 0; i--) {
-                versions.push(parseInt(api_versions[i].replace('.x', ''), 10));
+                version = parseInt(api_versions[i].replace('.x', ''), 10);
+                if (drupalModule.core.indexOf(version) == -1) {
+                  versions.push(version);
+                }
               };
               drupalModule.community = _.uniq(versions).sort();
             }
@@ -153,7 +165,8 @@ WorksWithDrupal.prototype = {
       if (err) return cb(err);
       return cached
         ? cb(null, new DrupalModule(cached))
-        : cb(new Error('"' + machineName + '" not found.'), new DrupalModule({ machineName: machineName }));
+        : cb(new Error('"' + machineName + '" not found.'),
+             new DrupalModule({ machineName: machineName }));
     });
   },
 
