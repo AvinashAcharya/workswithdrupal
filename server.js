@@ -37,7 +37,13 @@ function start (config, cb, drupal) {
     app.set('views', __dirname + '/views');
     app.set('view engine', 'jade');
     app.use(express.favicon('public/favicon.ico'));
-    app.use(express.bodyParser());
+
+    // TODO: restore express.bodyParser() once express has been updated to use
+    // connect 3.0
+    // app.use(express.bodyParser());
+    app.use(express.urlencoded())
+    app.use(express.json())
+
     app.use(express.methodOverride());
     app.use(app.router);
     app.use(slash());
