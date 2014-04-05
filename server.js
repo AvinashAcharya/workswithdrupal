@@ -64,7 +64,6 @@ function start (config, cb, drupal) {
       });
 
       app.param('version', params.version);
-      app.param('module', params.module);
       app.param('modules', params.modules);
 
       app.get('/', routes.index);

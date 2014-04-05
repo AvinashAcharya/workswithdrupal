@@ -7,27 +7,6 @@ module.exports = {
     next();
   },
 
-  module: function (req, res, next, module) {
-
-    var data = {
-      version: req.params.version,
-      module: req.params.module
-    };
-
-    req.drupal.module(data.module, function (err, name, versions) {
-
-      if (err) {
-        return next(err);
-      }
-
-      data.name = name;
-      data.versions = versions;
-      req.module = new Module(data);
-
-      next();
-    });
-  },
-
   modules: function (req, res, next, modules) {
 
     var modules = modules.split('+');
