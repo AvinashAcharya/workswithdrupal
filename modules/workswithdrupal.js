@@ -174,13 +174,16 @@ WorksWithDrupal.prototype = {
 
   getVersions: function (cb) {
 
+    var addVersions;
     var versions = [];
+
+
     cb = _.after(2, cb);
 
-    var addVersions = function (err, result) {
+    addVersions = function (err, result) {
       versions = versions.concat(result);
       cb(err, _.uniq(versions).sort());
-    };
+    }.bind(this);
 
     this.cache.collection.distinct('core', addVersions);
     this.cache.collection.distinct('community', addVersions);

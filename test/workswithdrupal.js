@@ -1,4 +1,3 @@
-
 'use strict';
 
 var fs = require('fs');
@@ -133,7 +132,7 @@ describe('Fixture based tests', function () {
     });
   });
 
-  describe('Frontend', function () {
+  describe('Server', function () {
 
     // disable logging
     app.set('env', 'test');
@@ -164,7 +163,9 @@ describe('Fixture based tests', function () {
       });
 
       it('404s when invalid versions are requested', function (done) {
-        request(app).get('/666/test_1').expect(404, done);
+        done = _.after(2, done);
+        request(app).get('/4/test_1').expect(200, done);
+        request(app).get('/5/test_1').expect(404, done);
       });
 
       it('returns all information about the requested module', function (done) {

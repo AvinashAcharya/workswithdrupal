@@ -13,8 +13,7 @@ var app = express();
 
 function start (config, cb, drupal) {
 
-  var versions = config.drupalVersions.sort();
-  var versionRange = versions[0] + '-' + versions[versions.length-1];
+  var versions, versionRange;
 
   if (!drupal) {
 
@@ -28,51 +27,64 @@ function start (config, cb, drupal) {
 
   } else {
 
-    app.use(function (req, res, next) {
-      req.drupal = drupal;
-      next();
+    drupal.getVersions(function (err, versions) {
+
+      versionRange = versions[0] + '-' + versions[versions.length-1];
+
+      app.use(function (req, res, next) {
+        req.drupal = drupal;
+        next();
+      });
+
+      app.set('port', process.env.PORT || config.port);
+      app.set('views', __dirname + '/views');
+      app.set('view engine', 'jade');
+      app.use(express.favicon('public/favicon.ico'));
+
+      // FIXME: put back the line below and remove the other two once express updates
+      // to connect 3.0: http://stackoverflow.com/a/19611997/55825
+      // app.use(express.bodyParser());
+      app.use(express.json());
+      app.use(express.urlencoded());
+
+      app.use(express.methodOverride());
+      app.use(app.router);
+      app.use(slash());
+      app.use(express.compress());
+      app.use(express.static(path.join(__dirname, 'public'), { maxAge: 86400000 * 365 }));
+
+      if ('development' == app.get('env')) {
+        app.use(express.errorHandler());
+        app.use(express.logger('dev'));
+      }
+
+      app.use(function (err, req, res, next) {
+        // TODO: friendly html error messages
+        res.send((err.code || 500), err.message);
+      });
+
+      app.param('version', params.version);
+      app.param('module', params.module);
+      app.param('modules', params.modules);
+
+      app.get('/', routes.index);
+      app.get('/about', routes.about);
+      app.get('/statistics', routes.statistics);
+      app.get('/:version([' + versionRange + '])', routes.index);
+      app.post('/', routes.formRedirect);
+      app.get('/:version([' + versionRange + '])/:modules([0-9a-z_+]+)', routes.modules);
+
+      server = http.createServer(app);
+      server.listen(app.get('port'), cb);
+
+      app.on('error', function (err) {
+        console.error(err);
+      });
+
+      server.on('error', function (err) {
+        console.error(err);
+      });
     });
-
-    app.set('port', process.env.PORT || config.port);
-    app.set('views', __dirname + '/views');
-    app.set('view engine', 'jade');
-    app.use(express.favicon('public/favicon.ico'));
-
-    // TODO: restore express.bodyParser() once express has been updated to use
-    // connect 3.0
-    // app.use(express.bodyParser());
-    app.use(express.urlencoded())
-    app.use(express.json())
-
-    app.use(express.methodOverride());
-    app.use(app.router);
-    app.use(slash());
-    app.use(express.compress());
-    app.use(express.static(path.join(__dirname, 'public'), { maxAge: 86400000 * 365 }));
-
-    if ('development' == app.get('env')) {
-      app.use(express.errorHandler());
-      app.use(express.logger('dev'));
-    }
-
-    app.use(function (err, req, res, next) {
-      // TODO: friendly html error messages
-      res.send((err.code || 500), err.message);
-    });
-
-    app.param('version', params.version);
-    app.param('module', params.module);
-    app.param('modules', params.modules);
-
-    app.get('/', routes.index);
-    app.get('/about', routes.about);
-    app.get('/statistics', routes.statistics);
-    app.get('/:version([' + versionRange + '])', routes.index);
-    app.post('/', routes.formRedirect);
-    app.get('/:version([' + versionRange + '])/:modules([0-9a-z_+]+)', routes.modules);
-
-    server = http.createServer(app);
-    server.listen(app.get('port'), cb);
   }
 }
 
@@ -83,3 +95,9 @@ function close(cb) {
 module.exports.app = app;
 module.exports.start = start;
 module.exports.close = close;
+
+process.on('uncaughtException', function (err) {
+  console.error('uncaughtException:', err.message);
+  console.error(err.stack);
+  process.exit(1);
+});

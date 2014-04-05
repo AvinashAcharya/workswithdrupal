@@ -13,9 +13,11 @@ var render = function (req, res, view, data) {
 module.exports = {
 
   index: function (req, res) {
-    res.render('index', {
-      versions: config.drupalVersions,
-      current: req.version || config.currentDrupalVersion
+    req.drupal.getVersions(function (err, versions) {
+      res.render('index', {
+        versions: versions.reverse(),
+        current: req.version || config.currentDrupalVersion
+      });
     });
   },
 

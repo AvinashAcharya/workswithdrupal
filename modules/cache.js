@@ -23,7 +23,7 @@ ModuleCache.prototype = {
       doc,
       { safe: true, upsert: true },
       function cacheInsert(err, module) {
-        cb(err, module)
+        cb(err, module);
       }
     );
   },

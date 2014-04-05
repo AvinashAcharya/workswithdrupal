@@ -1,7 +1,6 @@
 // TODO: use base config as source and merge in only stuff that differs?
 module.exports = {
   port: 1337,
-  drupalVersions: [4, 3, 2, 1],
   currentDrupalVersion: 3,
   timezone: 'Europe/Madrid',
   mongodb: {
