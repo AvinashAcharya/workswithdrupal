@@ -1,5 +1,11 @@
 var http = require('http');
 var express = require('express');
+var bodyParser = require('body-parser');
+var favicon = require('static-favicon');
+var methodOverride = require('method-override');
+var compression = require('compression');
+var errorhandler = require('errorhandler');
+var morgan  = require('morgan');
 var slash = require('express-slash');
 var path = require('path');
 var MongoClient = require('mongodb').MongoClient;
@@ -14,6 +20,7 @@ var app = express();
 function start (config, cb, drupal) {
 
   var versions, versionRange;
+  var router = express.Router();
 
   if (!drupal) {
 
@@ -39,23 +46,16 @@ function start (config, cb, drupal) {
       app.set('port', process.env.PORT || config.port);
       app.set('views', __dirname + '/views');
       app.set('view engine', 'jade');
-      app.use(express.favicon('public/favicon.ico'));
-
-      // FIXME: put back the line below and remove the other two once express updates
-      // to connect 3.0: http://stackoverflow.com/a/19611997/55825
-      // app.use(express.bodyParser());
-      app.use(express.json());
-      app.use(express.urlencoded());
-
-      app.use(express.methodOverride());
-      app.use(app.router);
-      app.use(slash());
-      app.use(express.compress());
+      app.use(favicon('public/favicon.ico'));
+      app.use(bodyParser());
+      app.use(methodOverride());
+      // app.use(slash());
+      app.use(compression());
       app.use(express.static(path.join(__dirname, 'public'), { maxAge: 86400000 * 365 }));
 
       if ('development' == app.get('env')) {
-        app.use(express.errorHandler());
-        app.use(express.logger('dev'));
+        app.use(errorhandler());
+        app.use(morgan('dev'));
       }
 
       app.use(function (err, req, res, next) {
@@ -63,15 +63,17 @@ function start (config, cb, drupal) {
         res.send((err.code || 500), err.message);
       });
 
-      app.param('version', params.version);
-      app.param('modules', params.modules);
+      router.param('version', params.version);
+      router.param('modules', params.modules);
 
-      app.get('/', routes.index);
-      app.get('/about', routes.about);
-      app.get('/statistics', routes.statistics);
-      app.get('/:version([' + versionRange + '])', routes.index);
-      app.post('/', routes.formRedirect);
-      app.get('/:version([' + versionRange + '])/:modules([0-9a-z_+]+)', routes.modules);
+      router.get('/', routes.index);
+      router.post('/', routes.formRedirect);
+      router.get('/about', routes.about);
+      router.get('/statistics', routes.statistics);
+      router.get('/:version([' + versionRange + '])', routes.index);
+      router.get('/:version([' + versionRange + '])/:modules([0-9a-z_+]+)', routes.modules);
+
+      app.use('/', router);
 
       server = http.createServer(app);
       server.listen(app.get('port'), cb);

@@ -3,8 +3,10 @@ var config = require(__dirname + '/../config.js');
 var drush = require(__dirname + '/../public/js/drush.js');
 
 var render = function (req, res, view, data) {
-  if (req.is('json')) {
-    res.send(data);
+  // FIXME: req.is('json') seems to not work the same in express 4.0
+  var contentType = req.get('Content-Type');
+  if (contentType && contentType.indexOf('json')) {
+    res.json(data);
   } else {
     res.render(view, data)
   }
